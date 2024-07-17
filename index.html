@@ -32,7 +32,7 @@
                     </div>
                     <div class="text-white main">
                         <div class="view-all">
-                            memunculkan seluruh list pokemon
+                            {{ pokemonList }}
                         </div>
                         <div class="view-detail">
                             memunculkan detail sebuah pokemon
@@ -47,15 +47,26 @@
         createApp({
             data() {
                 return {
-
+                    pokemonList: [],
                 }
             },
             methods: {
+                async getEachPokemon(pokemon) {
+                    let response = await fetch('https://pokeapi.co/api/v2/pokemon/' + pokemon.name);
+                    let pokemonDetails = await response.json();
+                    this.pokemonList.push(pokemonDetails);
+                },
                 async getPokemonList() {
                     let response = await fetch('https://pokeapi.co/api/v2/pokemon?limit=30');
-                    let pokemonList = await response.json();
-                    console.log(pokemonList);
-                }
+                    let jsonResponse = await response.json();
+                    let pokemonList = jsonResponse.results;
+
+                    pokemonList.forEach((pokemon) => {
+                        this.getEachPokemon(pokemon);
+                    });
+
+                },
+                
             },
             mounted() {
                 this.getPokemonList();
