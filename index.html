@@ -31,18 +31,40 @@
                         </div>
                     </div>
                     <div class="text-white main">
-                        <div class="view-all">
+                        <div class="view-all" v-if="!viewAsDetail">
                             <div class="row px-5">
-                                <div v-for="pokemon in pokemonList" class="col-12 col-md-4 col-lg-3 mb-3">
+                                <div v-for="pokemon in pokemonList" @click="viewDetailPokemon(pokemon)" class="col-12 col-md-4 col-lg-3 mb-3">
                                     <div class="card text-center text-white">
                                         <img v-bind:src="pokemon.sprites.front_default" alt="">
-                                        <label style="font-size: 18px;" class="p-1" for="">{{ pokemon.name }} {{ pokemon.id }}</label>
+                                        <label style="font-size: 18px;" class="p-1" for="">{{ pokemon.name }}</label>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="view-detail">
-                            memunculkan detail sebuah pokemon
+                        <div class="view-detail" v-else>
+                            <button @click="viewAsDetail = false" class="btn-light btn mb-5">Back</button>
+                            <div class="row">
+                                <div class="col-12 col-md-6">
+                                    <div class="card">
+                                        <img v-bind:src="selectedPokemon.sprites.front_default" alt="">
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    <h2>{{ selectedPokemon.name }}</h2>
+                                    <p>
+                                        <span for="">Types: </span><br>
+                                        <span v-for="type in selectedPokemon.types">
+                                            {{ type.type.name }} |
+                                        </span>
+                                    </p>
+                                    <p>
+                                        <span>Skills: </span><br>
+                                        <span v-for="move in selectedPokemon.moves">
+                                            {{ move.move.name }} |
+                                        </span>
+                                    </p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -55,6 +77,8 @@
             data() {
                 return {
                     pokemonList: [],
+                    viewAsDetail: false,
+                    selectedPokemon: {}
                 }
             },
             methods: {
@@ -74,8 +98,11 @@
                     pokemonList.forEach((pokemon, index) => {
                         this.getEachPokemon(pokemon, index, pokemonList.length);
                     });
-                    console.log(this.pokemonList)
                 },
+                viewDetailPokemon(pokemon) {
+                    this.viewAsDetail = true;
+                    this.selectedPokemon = pokemon;
+                }
                 
             },
             mounted() {
