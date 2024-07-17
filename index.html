@@ -27,13 +27,16 @@
                     </div>
                     <div class="row justify-content-center my-5">
                         <div class="col-6">
-                            <input type="text" name="" class="form-control" placeholder="search pokemon..." id="">
+                            <input v-model="search" type="text" name="" class="form-control" placeholder="search pokemon..." id="">
+                            <div class="text-white mt-2">
+                                <span v-if="!viewAsDetail">Suggestions: </span><span v-for="pokemon in suggestedPokemon">{{ pokemon.name }} | </span>
+                            </div>
                         </div>
                     </div>
                     <div class="text-white main">
                         <div class="view-all" v-if="!viewAsDetail">
                             <div class="row px-5">
-                                <div v-for="pokemon in pokemonList" @click="viewDetailPokemon(pokemon)" class="col-12 col-md-4 col-lg-3 mb-3">
+                                <div v-for="pokemon in pokemonLimitedList" @click="viewDetailPokemon(pokemon)" class="col-12 col-md-4 col-lg-3 mb-3">
                                     <div class="card text-center text-white">
                                         <img v-bind:src="pokemon.sprites.front_default" alt="">
                                         <label style="font-size: 18px;" class="p-1" for="">{{ pokemon.name }}</label>
@@ -77,37 +80,55 @@
             data() {
                 return {
                     pokemonList: [],
+                    pokemonLimitedList: [],
                     viewAsDetail: false,
-                    selectedPokemon: {}
+                    selectedPokemon: {},
+                    search:'',
+                    suggestedPokemon:''
                 }
             },
             methods: {
                 async getEachPokemon(pokemon, index, len) {
                     let response = await fetch('https://pokeapi.co/api/v2/pokemon/' + pokemon.name);
                     let pokemonDetails = await response.json();
-                    this.pokemonList.push(pokemonDetails);
+                    this.pokemonLimitedList.push(pokemonDetails);
                     if (index == len-1) {
-                        this.pokemonList.sort((a,b) => a.id - b.id)
+                        this.pokemonLimitedList.sort((a,b) => a.id - b.id)
                     }
                 },
-                async getPokemonList() {
+                async getLimitedPokemonList() {
                     let response = await fetch('https://pokeapi.co/api/v2/pokemon?limit=30');
                     let jsonResponse = await response.json();
-                    let pokemonList = jsonResponse.results;
+                    let pokemonLimitedList = jsonResponse.results;
                     
-                    pokemonList.forEach((pokemon, index) => {
-                        this.getEachPokemon(pokemon, index, pokemonList.length);
+                    pokemonLimitedList.forEach((pokemon, index) => {
+                        this.getEachPokemon(pokemon, index, pokemonLimitedList.length);
                     });
                 },
                 viewDetailPokemon(pokemon) {
                     this.viewAsDetail = true;
                     this.selectedPokemon = pokemon;
-                }
-                
+                },
+                async getAllPokemon() {
+                    let response = await fetch('https://pokeapi.co/api/v2/pokemon/?limit=151');
+                    let responseJson = await response.json();
+                    let pokemonList = responseJson.results;
+                    this.pokemonList = pokemonList;
+                },
             },
             mounted() {
-                this.getPokemonList();
+                this.getLimitedPokemonList();
+                this.getAllPokemon();
             },
+            watch: {
+                search() {
+                    let filteredPokemon = this.pokemonList.filter((item) => {
+                        return item.name.includes(this.search);
+                    });
+                    let sortedFilteredPokemon = filteredPokemon.sort((a,b) => a.id - b.id);
+                    this.suggestedPokemon = this.search.length > 0 ? sortedFilteredPokemon.slice(0,30) : '';
+                }
+            }
         }).mount('#app');
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
