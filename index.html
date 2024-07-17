@@ -32,7 +32,14 @@
                     </div>
                     <div class="text-white main">
                         <div class="view-all">
-                            {{ pokemonList }}
+                            <div class="row px-5">
+                                <div v-for="pokemon in pokemonList" class="col-12 col-md-4 col-lg-3 mb-3">
+                                    <div class="card text-center text-white">
+                                        <img v-bind:src="pokemon.sprites.front_default" alt="">
+                                        <label style="font-size: 18px;" class="p-1" for="">{{ pokemon.name }} {{ pokemon.id }}</label>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         <div class="view-detail">
                             memunculkan detail sebuah pokemon
@@ -51,20 +58,23 @@
                 }
             },
             methods: {
-                async getEachPokemon(pokemon) {
+                async getEachPokemon(pokemon, index, len) {
                     let response = await fetch('https://pokeapi.co/api/v2/pokemon/' + pokemon.name);
                     let pokemonDetails = await response.json();
                     this.pokemonList.push(pokemonDetails);
+                    if (index == len-1) {
+                        this.pokemonList.sort((a,b) => a.id - b.id)
+                    }
                 },
                 async getPokemonList() {
                     let response = await fetch('https://pokeapi.co/api/v2/pokemon?limit=30');
                     let jsonResponse = await response.json();
                     let pokemonList = jsonResponse.results;
-
-                    pokemonList.forEach((pokemon) => {
-                        this.getEachPokemon(pokemon);
+                    
+                    pokemonList.forEach((pokemon, index) => {
+                        this.getEachPokemon(pokemon, index, pokemonList.length);
                     });
-
+                    console.log(this.pokemonList)
                 },
                 
             },
